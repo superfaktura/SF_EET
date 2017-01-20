@@ -10,29 +10,21 @@ use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 class SoapClient extends \SoapClient {
 
-    /** @var string */
-    private $key;
-
-    /** @var Certificate */
-    private $certificate;
-
-    /** @var boolean */
-    private $traceRequired;
-
-    /** @var float */
-    private $connectionStartTime;
-
-    /** @var float */
-    private $lastResponseStartTime;
-
-    /** @var float */
-    private $lastResponseEndTime;
-
-    /** @var string */
-    private $lastRequest;
-
-	private $returnRequest = FALSE;
-
+	/** @var string */
+	private $key;
+	/** @var Certificate */
+	private $certificate;
+	/** @var boolean */
+	private $traceRequired;
+	/** @var float */
+	private $connectionStartTime;
+	/** @var float */
+	private $lastResponseStartTime;
+	/** @var float */
+	private $lastResponseEndTime;
+	/** @var string */
+	private $lastRequest;
+	private $returnRequest = false;
 	/**
 	 * @var int timeout in milliseconds
 	 */
@@ -42,22 +34,46 @@ class SoapClient extends \SoapClient {
 	 */
 	private $connectTimeout = 2000;
 
-    /**
-     * 
-     * @param string $service
-     * @param string $key
-     * @param string $cert
-     * @param boolean $trace
-     */
-    public function __construct($service, $certificate, $trace = FALSE) {
-        $this->connectionStartTime = microtime(TRUE);
-        parent::__construct($service, [
-            'exceptions' => TRUE,
-            'trace' => $trace
-        ]);
-        $this->certificate = $certificate;
-        $this->traceRequired = $trace;
-    }
+	/**
+	 *
+	 * @param string      $service
+	 * @param Certificate $certificate
+	 * @param boolean     $trace
+	 */
+	public function __construct($service, $certificate, $trace = false) {
+		$this->connectionStartTime = microtime(true);
+		parent::__construct($service, [
+			'exceptions' => true,
+			'trace'      => $trace,
+		]);
+		$this->certificate = $certificate;
+		$this->traceRequired = $trace;
+	}
+
+	public function getXMLforMethod($method, $data) {
+		$this->returnRequest = true;
+		$this->$method($data);
+		$this->returnRequest = false;
+
+		return $this->lastRequest;
+	}
+
+	public function __doRequest($request, $location, $saction, $version, $one_way = null) {
+
+		$xml = $this->getXML($request);
+		$this->lastRequest = $xml;
+		if($this->returnRequest) {
+			return '';
+		}
+
+		$this->traceRequired && $this->lastResponseStartTime = microtime(true);
+
+		$response = $this->__doRequestByCurl($xml, $location, $saction, $version);
+
+		$this->traceRequired && $this->lastResponseEndTime = microtime(true);
+
+		return $response;
+	}
 
 	public function getXML($request) {
 
@@ -73,33 +89,9 @@ class SoapClient extends \SoapClient {
 
 		$token = $objWSSE->addBinaryToken($this->certificate->getCert());
 		$objWSSE->attachTokentoSig($token);
-
+		
 		return $objWSSE->saveXML();
 	}
-
-	public function getXMLforMethod($method, $data) {
-		$this->returnRequest = TRUE;
-		$this->$method($data);
-		$this->returnRequest = FALSE;
-		return $this->lastRequest;
-	}
-
-    public function __doRequest($request, $location, $saction, $version, $one_way = NULL) {
-
-    	$xml = $this->getXML($request);
-		$this->lastRequest = $xml;
-		if ($this->returnRequest) {
-			return '';
-		}
-
-        $this->traceRequired && $this->lastResponseStartTime = microtime(TRUE);
-
-		$response = $this->__doRequestByCurl($xml, $location, $saction, $version);
-
-        $this->traceRequired && $this->lastResponseEndTime = microtime(TRUE);
-
-        return $response;
-    }
 
 	/**
 	 * @param string $request
@@ -111,28 +103,30 @@ class SoapClient extends \SoapClient {
 	 * @return string|null
 	 * @throws ClientException
 	 */
-	public function __doRequestByCurl($request, $location, $action, $version, $one_way = FALSE)
-	{
+	public function __doRequestByCurl($request, $location, $action, $version, $one_way = false) {
 		// Call via Curl and use the timeout a
 		$curl = curl_init($location);
-		if ($curl === false) {
+		if($curl === false) {
 			throw new ClientException('Curl initialisation failed');
 		}
 		/** @var $headers array of headers to be sent with request */
-		$headers = array(
+		$headers = [
 			'User-Agent: PHP-SOAP',
 			'Content-Type: text/xml; charset=utf-8',
 			'SOAPAction: "' . $action . '"',
 			'Content-Length: ' . strlen($request),
-		);
-		$options = array(
+		];
+		$options = [
 			CURLOPT_VERBOSE        => false,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_POST           => true,
 			CURLOPT_POSTFIELDS     => $request,
 			CURLOPT_HEADER         => $headers,
-			CURLOPT_HTTPHEADER     => array(sprintf('Content-Type: %s', $version == 2 ? 'application/soap+xml' : 'text/xml'), sprintf('SOAPAction: %s', $action)),
-		);
+			CURLOPT_HTTPHEADER     => [
+				sprintf('Content-Type: %s', $version == 2? 'application/soap+xml' : 'text/xml'),
+				sprintf('SOAPAction: %s', $action),
+			],
+		];
 		// Timeout in milliseconds
 		$options = $this->__curlSetTimeoutOption($options, $this->timeout, 'CURLOPT_TIMEOUT');
 		// ConnectTimeout in milliseconds
@@ -141,9 +135,9 @@ class SoapClient extends \SoapClient {
 		$this->__setCurlOptions($curl, $options);
 		$response = curl_exec($curl);
 
-		if (curl_errno($curl)) {
+		if(curl_errno($curl)) {
 			$errorMessage = curl_error($curl);
-			$errorNumber  = curl_errno($curl);
+			$errorNumber = curl_errno($curl);
 			curl_close($curl);
 			throw new ClientException($errorMessage, $errorNumber);
 		}
@@ -154,107 +148,102 @@ class SoapClient extends \SoapClient {
 
 		curl_close($curl);
 		// Return?
-		if ($one_way) {
+		if($one_way) {
 			return null;
 		} else {
 			return $body;
 		}
 	}
 
-	private function __setCurlOptions($curl, array $options)
-	{
-		foreach ($options as $option => $value) {
-			if (false !== curl_setopt($curl, $option, $value)) {
-				continue;
-			}
-			throw new ClientException(
-				sprintf('Failed setting CURL option %d (%s) to %s', $option, $this->__getCurlOptionName($option), var_export($value, true))
-			);
-		}
-	}
-
-	private function __curlSetTimeoutOption($options, $milliseconds, $name)
-	{
-		if ($milliseconds > 0) {
-			if (defined("{$name}_MS")) {
+	private function __curlSetTimeoutOption($options, $milliseconds, $name) {
+		if($milliseconds > 0) {
+			if(defined("{$name}_MS")) {
 				$options[constant("{$name}_MS")] = $milliseconds;
 			} else {
-				$seconds        = ceil($milliseconds / 1000);
+				$seconds = ceil($milliseconds / 1000);
 				$options[$name] = $seconds;
 			}
-			if ($milliseconds <= 1000) {
+			if($milliseconds <= 1000) {
 				$options[CURLOPT_NOSIGNAL] = 1;
 			}
 		}
+
 		return $options;
 	}
 
+	private function __setCurlOptions($curl, array $options) {
+		foreach($options as $option => $value) {
+			if(false !== curl_setopt($curl, $option, $value)) {
+				continue;
+			}
+			throw new ClientException(sprintf('Failed setting CURL option %d (%s) to %s', $option, $this->__getCurlOptionName($option), var_export($value, true)));
+		}
+	}
 
 	/**
-     * 
-     * @return float
-     */
-    public function __getLastResponseTime() {
-        return $this->lastResponseEndTime - $this->lastResponseStartTime;
-    }
+	 *
+	 * @return float
+	 */
+	public function __getLastResponseTime() {
+		return $this->lastResponseEndTime - $this->lastResponseStartTime;
+	}
 
-    /**
-     * 
-     * @return float
-     */
-    public function __getConnectionTime($tillLastRequest = FALSE) {
-        return $tillLastRequest ? $this->getConnectionTimeTillLastRequest() : $this->getConnectionTimeTillNow();
-    }
+	/**
+	 *
+	 * @return float
+	 */
+	public function __getConnectionTime($tillLastRequest = false) {
+		return $tillLastRequest? $this->getConnectionTimeTillLastRequest() : $this->getConnectionTimeTillNow();
+	}
 
-    private function getConnectionTimeTillLastRequest() {
-        if (!$this->lastResponseEndTime || !$this->connectionStartTime) {
-            return NULL;
-        }
-        return $this->lastResponseEndTime - $this->connectionStartTime;
-    }
+	private function getConnectionTimeTillLastRequest() {
+		if(!$this->lastResponseEndTime || !$this->connectionStartTime) {
+			return null;
+		}
 
-    private function getConnectionTimeTillNow() {
-        if (!$this->connectionStartTime) {
-            return NULL;
-        }
-        return microtime(TRUE) - $this->connectionStartTime;
-    }
+		return $this->lastResponseEndTime - $this->connectionStartTime;
+	}
 
-    /**
-     * @return string
-     */
-    public function __getLastRequest() {
-        return $this->lastRequest;
-    }
+	private function getConnectionTimeTillNow() {
+		if(!$this->connectionStartTime) {
+			return null;
+		}
+
+		return microtime(true) - $this->connectionStartTime;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function __getLastRequest() {
+		return $this->lastRequest;
+	}
+
+	/**
+	 * @return int|null timeout in milliseconds
+	 */
+	public function getTimeout() {
+		return $this->timeout;
+	}
 
 	/**
 	 * @param int|null $milliseconds timeout in milliseconds
 	 */
-	public function setTimeout($milliseconds)
-	{
+	public function setTimeout($milliseconds) {
 		$this->timeout = $milliseconds;
 	}
-	/**
-	 * @return int|null timeout in milliseconds
-	 */
-	public function getTimeout()
-	{
-		return $this->timeout;
-	}
-	/**
-	 * @param int|null $milliseconds
-	 */
-	public function setConnectTimeout($milliseconds)
-	{
-		$this->connectTimeout = $milliseconds;
-	}
+
 	/**
 	 * @return int|null
 	 */
-	public function getConnectTimeout()
-	{
+	public function getConnectTimeout() {
 		return $this->connectTimeout;
 	}
 
-
+	/**
+	 * @param int|null $milliseconds
+	 */
+	public function setConnectTimeout($milliseconds) {
+		$this->connectTimeout = $milliseconds;
+	}
 }

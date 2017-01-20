@@ -1,4 +1,4 @@
 nbproject/*
-vendor/
+vendor
 composer.lock
 .idea

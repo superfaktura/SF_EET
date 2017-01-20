@@ -3,7 +3,6 @@
 use PHPUnit\Framework\TestCase;
 use Po1nt\EET\Dispatcher as Tested;
 use Po1nt\EET\Receipt;
-use Po1nt\EET\SoapClient;
 
 class Dispatcher extends TestCase {
 
@@ -13,7 +12,7 @@ class Dispatcher extends TestCase {
 	}
 
 	/**
-	 * @expectedException Ondrejnov\EET\Exceptions\ServerException
+	 * @expectedException Po1nt\EET\Exceptions\ServerException
 	 */
 	public function testSendError() {
 		$dispatcher = $this->getTestDispatcher();
@@ -68,7 +67,7 @@ class Dispatcher extends TestCase {
 	}
 
 	/**
-	 * @expectedException Ondrejnov\EET\Exceptions\ServerException
+	 * @expectedException Po1nt\EET\Exceptions\ClientException
 	 */
 	public function testTraceNotEnabled() {
 		$dispatcher = $this->getTestDispatcher();
@@ -80,7 +79,8 @@ class Dispatcher extends TestCase {
 	 * @return Tested
 	 */
 	private function getTestDispatcher() {
-		return new Tested(PLAYGROUND_WSDL, DIR_CERT . '/EET_CA1_Playground-CZ1212121218.p12', 'eet');
+		$certificate = new \Po1nt\EET\Certificate(DIR_CERT . '/EET_CA1_Playground-CZ1212121218.p12', 'eet');
+		return new Tested(PLAYGROUND_WSDL, $certificate);
 	}
 
 	/**

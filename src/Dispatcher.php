@@ -5,16 +5,14 @@ namespace Po1nt\EET;
 use Po1nt\EET\Exceptions\ClientException;
 use Po1nt\EET\Exceptions\RequirementsException;
 use Po1nt\EET\Exceptions\ServerException;
-use Po1nt\EET\SoapClient;
 use Po1nt\EET\Utils\Format;
-use Po1nt\EET\Certificate;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 /**
  * Receipt for Ministry of Finance
  */
 class Dispatcher {
-
+	
 	/**
 	 * Certificate
 	 * @var Certificate
@@ -38,11 +36,11 @@ class Dispatcher {
 	 * @var array [warning code => message]
 	 */
 	private $warnings;
-
+	
 	/**
 	 *
-	 * @param string $key
-	 * @param string $cert
+	 * @param string      $service
+	 * @param Certificate $certificate
 	 */
 	public function __construct($service, $certificate) {
 		$this->service = $service;
@@ -50,10 +48,20 @@ class Dispatcher {
 		$this->warnings = [];
 		$this->checkRequirements();
 	}
-
+	
 	/**
 	 *
-	 * @param string  $service
+	 * @throws RequirementsException
+	 * @return void
+	 */
+	private function checkRequirements() {
+		if(!class_exists('\SoapClient')) {
+			throw new RequirementsException('Class SoapClient is not defined! Please, allow php extension php_soap.dll in php.ini');
+		}
+	}
+	
+	/**
+	 *
 	 * @param Receipt $receipt
 	 *
 	 * @return boolean|string
@@ -65,83 +73,7 @@ class Dispatcher {
 			return false;
 		}
 	}
-
-	/**
-	 *
-	 * @param boolean $tillLastRequest optional If not set/FALSE connection time till now is returned.
-	 *
-	 * @return float
-	 */
-	public function getConnectionTime($tillLastRequest = false) {
-		!$this->trace && $this->throwTraceNotEnabled();
-
-		return $this->getSoapClient()->__getConnectionTime($tillLastRequest);
-	}
-
-	/**
-	 *
-	 * @return int
-	 */
-	public function getLastResponseSize() {
-		!$this->trace && $this->throwTraceNotEnabled();
-
-		return mb_strlen($this->getSoapClient()->__getLastResponse(), '8bit');
-	}
-
-	/**
-	 *
-	 * @return int
-	 */
-	public function getLastRequestSize() {
-		!$this->trace && $this->throwTraceNotEnabled();
-
-		return mb_strlen($this->getSoapClient()->__getLastRequest(), '8bit');
-	}
-
-	/**
-	 *
-	 * @return float time in ms
-	 */
-	public function getLastResponseTime() {
-		!$this->trace && $this->throwTraceNotEnabled();
-
-		return $this->getSoapClient()->__getLastResponseTime();
-	}
-
-	/**
-	 *
-	 * @throws ClientException
-	 */
-	private function throwTraceNotEnabled() {
-		throw new ClientException('Trace is not enabled! Set trace property to TRUE.');
-	}
-
-	/**
-	 *
-	 * @param \Ondrejnov\EET\Receipt $receipt
-	 *
-	 * @return array
-	 */
-	public function getCheckCodes(Receipt $receipt) {
-		$objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, ['type' => 'private']);
-		$objKey->loadKey($this->certificate->getKey());
-
-		$arr = [
-			$receipt->dic_popl,
-			$receipt->id_provoz,
-			$receipt->id_pokl,
-			$receipt->porad_cis,
-			$receipt->dat_trzby->format('c'),
-			Format::price($receipt->celk_trzba),
-		];
-		$sign = $objKey->signData(join('|', $arr));
-
-		return [
-			'pkp' => ['_' => $sign, 'digest' => 'SHA256', 'cipher' => 'RSA2048', 'encoding' => 'base64'],
-			'bkp' => ['_' => Format::BKB(sha1($sign)), 'digest' => 'SHA1', 'encoding' => 'base16'],
-		];
-	}
-
+	
 	/**
 	 *
 	 * @param Receipt $receipt
@@ -151,46 +83,15 @@ class Dispatcher {
 	 */
 	public function send(Receipt $receipt, $check = false) {
 		$this->initSoapClient();
-
+		
 		$response = $this->processData($receipt, $check);
-
+		
 		isset($response->Chyba) && $this->processError($response->Chyba);
 		isset($response->Varovani) && $this->warnings = $this->processWarnings($response->Varovani);
-
+		
 		return $check? true : $response->Potvrzeni->fik;
 	}
-
-	/**
-	 * Returns array of warnings if the last response contains any, empty array otherwise.
-	 *
-	 * @return array [warning code => message]
-	 */
-	public function getWarnings() {
-		return $this->warnings;
-	}
-
-	/**
-	 *
-	 * @throws RequirementsException
-	 * @return void
-	 */
-	private function checkRequirements() {
-		if(!class_exists('\SoapClient')) {
-			throw new RequirementsException('Class SoapClient is not defined! Please, allow php extension php_soap.dll in php.ini');
-		}
-	}
-
-	/**
-	 * Get (or if not exists: initialize and get) SOAP client.
-	 *
-	 * @return SoapClient
-	 */
-	public function getSoapClient() {
-		!isset($this->soapClient) && $this->initSoapClient();
-
-		return $this->soapClient;
-	}
-
+	
 	/**
 	 * Require to initialize a new SOAP client for a new request.
 	 *
@@ -201,7 +102,20 @@ class Dispatcher {
 			$this->soapClient = new SoapClient($this->service, $this->certificate, $this->trace);
 		}
 	}
-
+	
+	/**
+	 *
+	 * @param Receipt $receipt
+	 * @param boolean $check
+	 *
+	 * @return object
+	 */
+	private function processData(Receipt $receipt, $check = false) {
+		$data = $this->prepareData($receipt, $check);
+		
+		return $this->getSoapClient()->OdeslaniTrzby($data);
+	}
+	
 	public function prepareData($receipt, $check = false) {
 		$head = [
 			'uuid_zpravy'   => $receipt->uuid_zpravy,
@@ -209,7 +123,7 @@ class Dispatcher {
 			'prvni_zaslani' => $receipt->prvni_zaslani,
 			'overeni'       => $check,
 		];
-
+		
 		$body = [
 			'dic_popl'         => $receipt->dic_popl,
 			'dic_poverujiciho' => $receipt->dic_poverujiciho,
@@ -233,23 +147,47 @@ class Dispatcher {
 			'cerp_zuct'        => Format::price($receipt->cerp_zuct),
 			'rezim'            => $receipt->rezim,
 		];
-
+		
 		return ['Hlavicka' => $head, 'Data' => $body, 'KontrolniKody' => $this->getCheckCodes($receipt)];
 	}
-
+	
 	/**
 	 *
-	 * @param Receipt $receipt
-	 * @param boolean $check
+	 * @param \Po1nt\EET\Receipt $receipt
 	 *
-	 * @return object
+	 * @return array
 	 */
-	private function processData(Receipt $receipt, $check = false) {
-		$data = $this->prepareData($receipt, $check);
-
-		return $this->getSoapClient()->OdeslaniTrzby($data);
+	public function getCheckCodes(Receipt $receipt) {
+		$objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, ['type' => 'private']);
+		$objKey->loadKey($this->certificate->getKey());
+		
+		$arr = [
+			$receipt->dic_popl,
+			$receipt->id_provoz,
+			$receipt->id_pokl,
+			$receipt->porad_cis,
+			$receipt->dat_trzby->format('c'),
+			Format::price($receipt->celk_trzba),
+		];
+		$sign = $objKey->signData(join('|', $arr));
+		
+		return [
+			'pkp' => ['_' => $sign, 'digest' => 'SHA256', 'cipher' => 'RSA2048', 'encoding' => 'base64'],
+			'bkp' => ['_' => Format::BKB(sha1($sign)), 'digest' => 'SHA1', 'encoding' => 'base16'],
+		];
 	}
-
+	
+	/**
+	 * Get (or if not exists: initialize and get) SOAP client.
+	 *
+	 * @return SoapClient
+	 */
+	public function getSoapClient() {
+		!isset($this->soapClient) && $this->initSoapClient();
+		
+		return $this->soapClient;
+	}
+	
 	/**
 	 * @param $error
 	 *
@@ -271,7 +209,7 @@ class Dispatcher {
 			throw new ServerException($msg, $error->kod);
 		}
 	}
-
+	
 	/**
 	 * @param \stdClass $warnings
 	 *
@@ -282,10 +220,10 @@ class Dispatcher {
 		foreach($warnings as $warning) {
 			$result[\intval($warning->kod_varov)] = $this->getWarningMsg($warning->kod_varov);
 		}
-
+		
 		return $result;
 	}
-
+	
 	/**
 	 * @param int $id warning code
 	 *
@@ -303,7 +241,66 @@ class Dispatcher {
 		if(\array_key_exists($id, $msgs)) {
 			$result = $msgs[$id];
 		}
-
+		
 		return $result;
+	}
+	
+	/**
+	 *
+	 * @param boolean $tillLastRequest optional If not set/FALSE connection time till now is returned.
+	 *
+	 * @return float
+	 */
+	public function getConnectionTime($tillLastRequest = false) {
+		!$this->trace && $this->throwTraceNotEnabled();
+		
+		return $this->getSoapClient()->__getConnectionTime($tillLastRequest);
+	}
+	
+	/**
+	 *
+	 * @throws ClientException
+	 */
+	private function throwTraceNotEnabled() {
+		throw new ClientException('Trace is not enabled! Set trace property to TRUE.');
+	}
+	
+	/**
+	 *
+	 * @return int
+	 */
+	public function getLastResponseSize() {
+		!$this->trace && $this->throwTraceNotEnabled();
+		
+		return mb_strlen($this->getSoapClient()->__getLastResponse(), '8bit');
+	}
+	
+	/**
+	 *
+	 * @return int
+	 */
+	public function getLastRequestSize() {
+		!$this->trace && $this->throwTraceNotEnabled();
+		
+		return mb_strlen($this->getSoapClient()->__getLastRequest(), '8bit');
+	}
+	
+	/**
+	 *
+	 * @return float time in ms
+	 */
+	public function getLastResponseTime() {
+		!$this->trace && $this->throwTraceNotEnabled();
+		
+		return $this->getSoapClient()->__getLastResponseTime();
+	}
+	
+	/**
+	 * Returns array of warnings if the last response contains any, empty array otherwise.
+	 *
+	 * @return array [warning code => message]
+	 */
+	public function getWarnings() {
+		return $this->warnings;
 	}
 }
