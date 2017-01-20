@@ -1,6 +1,6 @@
 <?php
 
-namespace Ondrejnov\EET\Exceptions;
+namespace Po1nt\EET\Exceptions;
 
 class ServerException extends \Exception {
     

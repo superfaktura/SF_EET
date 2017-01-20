@@ -1,6 +1,6 @@
 <?php
 
-namespace Ondrejnov\EET\Utils;
+namespace Po1nt\EET\Utils;
 
 class Format {
 

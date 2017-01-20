@@ -1,9 +1,9 @@
 <?php
 
-namespace Ondrejnov\EET;
+namespace Po1nt\EET;
 
-use Ondrejnov\EET\Exceptions\ClientException;
-use Ondrejnov\EET\Certificate;
+use Po1nt\EET\Exceptions\ClientException;
+use Po1nt\EET\Certificate;
 use RobRichards\WsePhp\WSSESoap;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use RobRichards\XMLSecLibs\XMLSecurityKey;

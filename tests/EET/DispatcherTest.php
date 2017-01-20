@@ -1,13 +1,9 @@
 <?php
 
-namespace Ondrejnov\EET\Test;
-
 use PHPUnit\Framework\TestCase;
-use Ondrejnov\EET\Dispatcher as Tested;
-use Ondrejnov\EET\Exceptions\ClientException;
-use Ondrejnov\EET\Exceptions\ServerException;
-use Ondrejnov\EET\Receipt;
-use Ondrejnov\EET\SoapClient;
+use Po1nt\EET\Dispatcher as Tested;
+use Po1nt\EET\Receipt;
+use Po1nt\EET\SoapClient;
 
 class Dispatcher extends TestCase {
 

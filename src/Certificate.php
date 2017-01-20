@@ -1,8 +1,8 @@
 <?php
 
-namespace Ondrejnov\EET;
+namespace Po1nt\EET;
 
-use Ondrejnov\EET\Exceptions\ClientException;
+use Po1nt\EET\Exceptions\ClientException;
 
 /**
  * Rozdelenie PKCS#12 na klúč a certifikát

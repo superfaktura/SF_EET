@@ -1,13 +1,13 @@
 <?php
 
-namespace Ondrejnov\EET;
+namespace Po1nt\EET;
 
-use Ondrejnov\EET\Exceptions\ClientException;
-use Ondrejnov\EET\Exceptions\RequirementsException;
-use Ondrejnov\EET\Exceptions\ServerException;
-use Ondrejnov\EET\SoapClient;
-use Ondrejnov\EET\Utils\Format;
-use Ondrejnov\EET\Certificate;
+use Po1nt\EET\Exceptions\ClientException;
+use Po1nt\EET\Exceptions\RequirementsException;
+use Po1nt\EET\Exceptions\ServerException;
+use Po1nt\EET\SoapClient;
+use Po1nt\EET\Utils\Format;
+use Po1nt\EET\Certificate;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 /**
@@ -15,11 +15,6 @@ use RobRichards\XMLSecLibs\XMLSecurityKey;
  */
 class Dispatcher {
 
-	/**
-	 * Certificate key
-	 * @var string
-	 */
-	private $key;
 	/**
 	 * Certificate
 	 * @var Certificate
@@ -49,9 +44,9 @@ class Dispatcher {
 	 * @param string $key
 	 * @param string $cert
 	 */
-	public function __construct($service, $certificate_file, $password) {
+	public function __construct($service, $certificate) {
 		$this->service = $service;
-		$this->certificate = new Certificate($certificate_file, $password);
+		$this->certificate = $certificate;
 		$this->warnings = [];
 		$this->checkRequirements();
 	}

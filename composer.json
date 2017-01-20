@@ -22,6 +22,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
-        "classmap": ["src/"]
+        "psr-4": {
+          "Po1nt\\EET\\": "src/"
+        }
     }
 }
