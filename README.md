@@ -18,15 +18,14 @@ Sample codes are located in examples/ folder
 
 ```php
 use Po1nt\EET\Dispatcher;
-use Po1nt\EET\Certufucate;
+use Po1nt\EET\Certificate;
 use Po1nt\EET\Receipt;
-use Po1nt\EET\Utils\UUID;
 
 $certificate = new Certificate(DIR_CERT . '/EET_CA1_Playground-CZ1212121218.p12', 'eet');
 $dispatcher = new Dispatcher(PLAYGROUND_WSDL, $certificate);
 
 $r = new Receipt();
-$r->uuid_zpravy = UUID::v4();
+$r->uuid_zpravy = 'b3a09b52-7c87-4014-a496-4c7a53cf9120';
 $r->dic_popl = 'CZ1212121218';
 $r->id_provoz = '181';
 $r->id_pokl = '1';
