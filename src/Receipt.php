@@ -8,7 +8,7 @@ use Po1nt\EET\Exceptions\ClientException;
 /**
  * Receipt for Ministry of Finance
  */
-class Receipt {
+class Receipt extends \stdClass {
 
 	/**
 	 * @var ReceiptData[] $data
