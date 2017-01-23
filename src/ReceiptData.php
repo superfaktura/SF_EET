@@ -2,6 +2,11 @@
 
 namespace Po1nt\EET;
 
+/**
+ * Each data value of Receipt
+ *
+ * @package Po1nt\EET
+ */
 class ReceiptData {
 	
 	/** @var string */
@@ -10,7 +15,14 @@ class ReceiptData {
 	protected $value;
 	/** @var mixed[] */
 	protected $validations = [];
-	
+
+	/**
+	 * ReceiptData constructor.
+	 *
+	 * @param string $name
+	 * @param string|float|int|\DateTime $default
+	 * @param mixed[]|bool $validations
+	 */
 	public function __construct($name, $default = null, $validations = false) {
 		$this->name = $name;
 		$this->value = $default;

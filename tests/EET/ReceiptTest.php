@@ -1,9 +1,20 @@
 <?php
 
+namespace Po1nt\EET\Tests;
+
+use PHPUnit\Framework\TestCase;
 use Po1nt\EET\Receipt;
+use Po1nt\EET\Exceptions\ReceiptDataException;
 
-class ReceiptTest extends PHPUnit_Framework_TestCase {
+/**
+ * Tests for receipt classes
+ * @package Po1nt\EET\Tests
+ */
+class ReceiptTest extends TestCase {
 
+	/**
+	 * @return Receipt
+	 */
 	public function testCreateReceipt() {
 		$receipt = new Receipt();
 		$receipt->uuid_zpravy = 'b3a09b52-7c87-4014-a496-4c7a53cf9120';
@@ -18,7 +29,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @expectedException Po1nt\EET\Exceptions\ReceiptDataException
+	 * @expectedException ReceiptDataException
 	 */
 	public function testInvalidDataException() {
 		$receipt = new Receipt();

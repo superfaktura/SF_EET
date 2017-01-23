@@ -1,10 +1,19 @@
 <?php
 
+namespace Po1nt\EET\Tests;
+
 use PHPUnit\Framework\TestCase;
+use Po1nt\EET\Certificate;
 use Po1nt\EET\Dispatcher as Tested;
 use Po1nt\EET\Receipt;
+use Po1nt\EET\Exceptions\ServerException;
+use Po1nt\EET\Exceptions\ClientException;
 
-class Dispatcher extends TestCase {
+/**
+ * Tests for Dispatcher class
+ * @package Po1nt\EET\Tests
+ */
+class DispatcherTest extends TestCase {
 
 	public function testSendOk() {
 		$fik = $this->getTestDispatcher()->send($this->getExampleReceipt());
@@ -12,7 +21,7 @@ class Dispatcher extends TestCase {
 	}
 
 	/**
-	 * @expectedException Po1nt\EET\Exceptions\ServerException
+	 * @expectedException ServerException
 	 */
 	public function testSendError() {
 		$dispatcher = $this->getTestDispatcher();
@@ -67,7 +76,7 @@ class Dispatcher extends TestCase {
 	}
 
 	/**
-	 * @expectedException Po1nt\EET\Exceptions\ClientException
+	 * @expectedException ClientException
 	 */
 	public function testTraceNotEnabled() {
 		$dispatcher = $this->getTestDispatcher();
@@ -85,7 +94,8 @@ class Dispatcher extends TestCase {
 	 * @return Tested
 	 */
 	private function getTestDispatcher() {
-		$certificate = new \Po1nt\EET\Certificate(DIR_CERT . '/EET_CA1_Playground-CZ1212121218.p12', 'eet');
+		/** @var Certificate $certificate */
+		$certificate = new Certificate(DIR_CERT . '/EET_CA1_Playground-CZ1212121218.p12', 'eet');
 		return new Tested(PLAYGROUND_WSDL, $certificate);
 	}
 

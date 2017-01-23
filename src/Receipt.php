@@ -14,7 +14,12 @@ class Receipt extends \stdClass {
 	 * @var ReceiptData[] $data
 	 */
 	protected $data;
-	
+
+	/**
+	 * @param $key
+	 * @return string
+	 * @throws ReceiptDataException
+	 */
 	public function __get($key) {
 		if(!isset($this->data[$key])) {
 			throw new ReceiptDataException("Couldn't find such data");
@@ -24,7 +29,12 @@ class Receipt extends \stdClass {
 		
 		return $data->getValue();
 	}
-	
+
+	/**
+	 * @param $key
+	 * @param $value
+	 * @throws ReceiptDataException
+	 */
 	public function __set($key, $value) {
 		if($key == 'data' && is_array($value)) {
 			$this->data = $value;

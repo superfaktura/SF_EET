@@ -8,4 +8,5 @@ define('DIR_SRC', DIR_ROOT . '/src');
 define('DIR_TEMP', DIR_ROOT . '/temp');
 define('PLAYGROUND_WSDL', DIR_SRC . '/Schema/PlaygroundService.wsdl');
 
+/** @noinspection PhpIncludeInspection */
 require_once DIR_VENDOR . "/autoload.php";

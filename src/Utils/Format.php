@@ -2,12 +2,29 @@
 
 namespace Po1nt\EET\Utils;
 
-class Format {
+/**
+ * Format Helper class
+ *
+ * @package Po1nt\EET\Utils
+ */
+abstract class Format {
 
+    /**
+     * Format float as valid currency format
+     *
+     * @param $value
+     * @return string
+     */
     public static function price($value) {
         return number_format($value, 2, '.', '');
     }
 
+    /**
+     * Helper function for calculating BKB
+     *
+     * @param $code
+     * @return string
+     */
     public static function BKB($code) {
         $r = '';
         for ($i = 0; $i < 40; $i++) {

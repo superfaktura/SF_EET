@@ -3,15 +3,17 @@
 namespace Po1nt\EET;
 
 use Po1nt\EET\Exceptions\ClientException;
-use Po1nt\EET\Certificate;
 use RobRichards\WsePhp\WSSESoap;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
+/**
+ * Class handling Soap requests/responses
+ *
+ * @package Po1nt\EET
+ */
 class SoapClient extends \SoapClient {
-
-	/** @var string */
-	private $key;
+	
 	/** @var Certificate */
 	private $certificate;
 	/** @var boolean */
@@ -50,6 +52,12 @@ class SoapClient extends \SoapClient {
 		$this->traceRequired = $trace;
 	}
 
+	/**
+	 * @param $method
+	 * @param $data
+	 *
+	 * @return string
+	 */
 	public function getXMLforMethod($method, $data) {
 		$this->returnRequest = true;
 		$this->$method($data);
@@ -58,6 +66,16 @@ class SoapClient extends \SoapClient {
 		return $this->lastRequest;
 	}
 
+	/**
+	 * @param string $request
+	 * @param string $location
+	 * @param string $saction
+	 * @param int    $version
+	 * @param null   $one_way
+	 *
+	 * @return null|string
+	 * @throws ClientException
+	 */
 	public function __doRequest($request, $location, $saction, $version, $one_way = null) {
 
 		$xml = $this->getXML($request);
@@ -74,7 +92,13 @@ class SoapClient extends \SoapClient {
 
 		return $response;
 	}
-
+	
+	/**
+	 * @param $request
+	 *
+	 * @return mixed
+	 * @throws \Exception
+	 */
 	public function getXML($request) {
 
 		$doc = new \DOMDocument('1.0');
@@ -143,7 +167,6 @@ class SoapClient extends \SoapClient {
 		}
 
 		$header_len = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
-		$header = substr($response, 0, $header_len);
 		$body = substr($response, $header_len);
 
 		curl_close($curl);
@@ -155,6 +178,13 @@ class SoapClient extends \SoapClient {
 		}
 	}
 
+	/**
+	 * @param $options
+	 * @param $milliseconds
+	 * @param $name
+	 *
+	 * @return mixed
+	 */
 	private function __curlSetTimeoutOption($options, $milliseconds, $name) {
 		if($milliseconds > 0) {
 			if(defined("{$name}_MS")) {
@@ -171,11 +201,18 @@ class SoapClient extends \SoapClient {
 		return $options;
 	}
 
+	/**
+	 * @param       $curl
+	 * @param array $options
+	 *
+	 * @throws ClientException
+	 */
 	private function __setCurlOptions($curl, array $options) {
 		foreach($options as $option => $value) {
 			if(false !== curl_setopt($curl, $option, $value)) {
 				continue;
 			}
+			/** @noinspection PhpUndefinedMethodInspection */
 			throw new ClientException(sprintf('Failed setting CURL option %d (%s) to %s', $option, $this->__getCurlOptionName($option), var_export($value, true)));
 		}
 	}
@@ -189,13 +226,16 @@ class SoapClient extends \SoapClient {
 	}
 
 	/**
-	 *
+	 * @param boolean $tillLastRequest
 	 * @return float
 	 */
 	public function __getConnectionTime($tillLastRequest = false) {
 		return $tillLastRequest? $this->getConnectionTimeTillLastRequest() : $this->getConnectionTimeTillNow();
 	}
 
+	/**
+	 * @return float|null
+	 */
 	private function getConnectionTimeTillLastRequest() {
 		if(!$this->lastResponseEndTime || !$this->connectionStartTime) {
 			return null;
@@ -204,6 +244,9 @@ class SoapClient extends \SoapClient {
 		return $this->lastResponseEndTime - $this->connectionStartTime;
 	}
 
+	/**
+	 * @return mixed|null
+	 */
 	private function getConnectionTimeTillNow() {
 		if(!$this->connectionStartTime) {
 			return null;

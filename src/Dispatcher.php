@@ -113,9 +113,18 @@ class Dispatcher {
 	private function processData(Receipt $receipt, $check = false) {
 		$data = $this->prepareData($receipt, $check);
 		
+		/** @noinspection PhpUndefinedMethodInspection */
 		return $this->getSoapClient()->OdeslaniTrzby($data);
 	}
-	
+
+	/**
+	 * Stringifying data for receipt
+	 *
+	 * @param Receipt $receipt
+	 * @param bool $check
+	 *
+	 * @return array
+	 */
 	public function prepareData($receipt, $check = false) {
 		$head = [
 			'uuid_zpravy'   => $receipt->uuid_zpravy,
