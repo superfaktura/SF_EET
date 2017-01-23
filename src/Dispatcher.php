@@ -130,7 +130,7 @@ class Dispatcher {
 			'id_provoz'        => $receipt->id_provoz,
 			'id_pokl'          => $receipt->id_pokl,
 			'porad_cis'        => $receipt->porad_cis,
-			'dat_trzby'        => $receipt->dat_trzby->format('c'),
+			'dat_trzby'        => ($receipt->dat_trzby instanceof \DateTime)? $receipt->dat_trzby->format(\DateTime::W3C) : $receipt->dat_trzby,
 			'celk_trzba'       => Format::price($receipt->celk_trzba),
 			'zakl_nepodl_dph'  => Format::price($receipt->zakl_nepodl_dph),
 			'zakl_dan1'        => Format::price($receipt->zakl_dan1),
