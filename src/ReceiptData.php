@@ -32,7 +32,18 @@ class ReceiptData {
 		foreach($this->validations as $validation) {
 			$valid = true;
 			if(is_string($validation)) {
-				$valid = preg_match($validation, $this->value) !== false;
+
+				if(!is_string($this->value) && !is_numeric($this->value)) {
+					if($this->value instanceof \DateTime) {
+						$value = $this->value->format(\DateTime::W3C);
+					} else {
+						return false; // Unsupported data type
+					}
+				} else {
+					$value = $this->value;
+				}
+
+				$valid = preg_match($validation, $value) !== false;
 			} else {
 				if(is_callable($validation)) {
 					$valid = $validation($this->value);
@@ -55,13 +66,8 @@ class ReceiptData {
 	 * @return boolean
 	 */
 	public function setValue($value) {
-		if($this->__validate()) {
-			$this->value = $value;
-			
-			return true;
-		} else {
-			return false;
-		}
+		$this->value = $value;
+		return $this->__validate();
 	}
 	
 	/**
