@@ -3,7 +3,7 @@
 namespace Po1nt\EET;
 
 use \DateTime;
-use Po1nt\EET\Exceptions\ClientException;
+use Po1nt\EET\Exceptions\ReceiptDataException;
 
 /**
  * Receipt for Ministry of Finance
@@ -17,7 +17,7 @@ class Receipt extends \stdClass {
 	
 	public function __get($key) {
 		if(!isset($this->data[$key])) {
-			throw new ClientException("Couldn't find such data");
+			throw new ReceiptDataException("Couldn't find such data");
 		}
 		
 		$data = $this->data[$key];
@@ -33,13 +33,13 @@ class Receipt extends \stdClass {
 		}
 		
 		if(!isset($this->data[$key])) {
-			throw new ClientException("Data key " . $key . " is not documented, therefore couldn't be set");
+			throw new ReceiptDataException("Data key " . $key . " is not documented, therefore couldn't be set");
 		}
 		
 		$data = $this->data[$key];
 		$valid = $data->setValue($value);
 		if(!$valid) {
-			throw new ClientException("Data value '" . $value . "' is not valid for key '" . $key . "'");
+			throw new ReceiptDataException("Data value '" . $value . "' is not valid for key '" . $key . "'");
 		}
 	}
 	
