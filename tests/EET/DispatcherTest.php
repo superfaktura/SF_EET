@@ -75,6 +75,12 @@ class Dispatcher extends TestCase {
 		$dispatcher->getLastResponseSize();
 	}
 
+	public function testDateReformat() {
+		$dispatcher = $this->getTestDispatcher();
+		$data = $dispatcher->prepareData($this->getExampleReceipt());
+		$this->assertRegExp('/^(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})[+-](\d{2})\:(\d{2})$/', $data['Data']['dat_trzby']);
+	}
+
 	/**
 	 * @return Tested
 	 */
