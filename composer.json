@@ -19,11 +19,14 @@
     "suggest": {
         "ramsey/uuid": "Useful tool for generating UUIDv4"
     },
+    "replace": {
+        "ondrejnov/eet": "self.version"
+    },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-          "Po1nt\\EET\\": "src/"
+            "Po1nt\\EET\\": "src/"
         }
     }
 }
