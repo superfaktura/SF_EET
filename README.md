@@ -18,10 +18,10 @@ Sample codes are located in examples/ folder
 
 ```php
 use Po1nt\EET\Dispatcher;
-use Po1nt\EET\Certificate;
+use Po1nt\EET\FileCertificate;
 use Po1nt\EET\Receipt;
 
-$certificate = new Certificate(DIR_CERT . '/EET_CA1_Playground-CZ1212121218.p12', 'eet');
+$certificate = new FileCertificate(DIR_CERT . '/EET_CA1_Playground-CZ1212121218.p12', 'eet');
 $dispatcher = new Dispatcher(PLAYGROUND_WSDL, $certificate);
 
 $r = new Receipt();

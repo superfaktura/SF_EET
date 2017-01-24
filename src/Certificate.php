@@ -27,38 +27,56 @@ class Certificate {
 	public function getCert() {
 		return $this->certificate;
 	}
-	
+
 	/**
 	 * Certificate constructor
 	 *
-	 * @param string $certificate
+	 * @param string $pkcs12
 	 * @param string $password
 	 *
 	 * @throws ClientException
 	 */
-	public function __construct($certificate, $password) {
-		if(!extension_loaded('openssl') || !function_exists('openssl_pkcs12_read')) {
-			throw new ClientException("OpenSSL extension not available");
-		}
+	public function __construct($pkcs12, $password) {
+		$this->checkRequirements();
 		
-		if(!file_exists($certificate)) {
-			throw new ClientException("Certificate has not been found");
+		if(empty($pkcs12)) {
+			throw new ClientException("Certificate is empty");
 		}
-		
+
 		if(empty($password)) {
 			throw new ClientException("Certificate password is empty");
 		}
 		
-		$pkcs12 = file_get_contents($certificate);
-		
-		$certs = [];
-		$openSSL = openssl_pkcs12_read($pkcs12, $certs, $password);
-		
-		if(!$openSSL) {
-			throw new ClientException("Certificate couldn't be exported");
-		}
+		$certs = $this->splitPkcs12($pkcs12, $password);
 		
 		$this->privateKey = $certs['pkey'];
 		$this->certificate = $certs['cert'];
+	}
+	
+	/**
+	 * @param string $pkcs12
+	 * @param string $password
+	 *
+	 * @return string[]
+	 * @throws ClientException
+	 */
+	protected function splitPkcs12($pkcs12, $password) {
+		$certs = [];
+		$success = openssl_pkcs12_read($pkcs12, $certs, $password);
+		
+		if(!$success) {
+			throw new ClientException("Certificate is not valid, and couldn't be split " . substr($pkcs12, 0, 100));
+		}
+		
+		return $certs;
+	}
+	
+	/**
+	 * @throws ClientException
+	 */
+	private function checkRequirements() {
+		if(!extension_loaded('openssl') || !function_exists('openssl_pkcs12_read')) {
+			throw new ClientException("OpenSSL extension not available");
+		}
 	}
 }

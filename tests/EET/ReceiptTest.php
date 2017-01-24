@@ -4,7 +4,6 @@ namespace Po1nt\EET\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Po1nt\EET\Receipt;
-use Po1nt\EET\Exceptions\ReceiptDataException;
 
 /**
  * Tests for receipt classes
@@ -29,7 +28,7 @@ class ReceiptTest extends TestCase {
 	}
 
 	/**
-	 * @expectedException ReceiptDataException
+	 * @expectedException \Po1nt\EET\Exceptions\ReceiptDataException
 	 */
 	public function testInvalidDataException() {
 		$receipt = new Receipt();
