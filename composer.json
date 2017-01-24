@@ -3,7 +3,7 @@
     "description": "EET (Electronic records of sales for Czech Ministry of Finance) Client for PHP, based on ondrejnov/eet",
     "type": "library",
     "license": ["MIT", "BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
-    "version": "0.3.0",
+    "version": "1.0",
     "require": {
         "php": ">=5.6.0",
         "robrichards/xmlseclibs": "2.0.*",
@@ -18,9 +18,6 @@
     },
     "suggest": {
         "ramsey/uuid": "Useful tool for generating UUIDv4"
-    },
-    "replace": {
-        "ondrejnov/eet": "self.version"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
