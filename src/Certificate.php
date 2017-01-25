@@ -100,7 +100,7 @@ class Certificate {
 		$success = openssl_pkcs12_read($pkcs12, $certs, $password);
 		
 		if(!$success) {
-			throw new ClientException("Certificate is not valid, and couldn't be split " . substr($pkcs12, 0, 100));
+			throw new ClientException("Certificate is not valid, and couldn't be split");
 		}
 		
 		return $certs;
