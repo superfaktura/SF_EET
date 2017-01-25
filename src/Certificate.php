@@ -37,6 +37,27 @@ class Certificate {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getHash() {
+		return $this->hash;
+	}
+
+	/**
+	 * @return DateTime
+	 */
+	public function getValidFrom() {
+		return $this->validFrom;
+	}
+
+	/**
+	 * @return DateTime
+	 */
+	public function getValidTo() {
+		return $this->validTo;
+	}
+
+	/**
 	 * Certificate constructor
 	 *
 	 * @param string $pkcs12
