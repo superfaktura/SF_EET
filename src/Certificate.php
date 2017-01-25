@@ -81,7 +81,7 @@ class Certificate {
 		$meta = openssl_x509_parse($certs['cert']);
 
 		$this->hash = $meta['hash'];
-		$this->validFrom = date_create_from_format('ymdHise', $meta['validTo']);
+		$this->validFrom = date_create_from_format('ymdHise', $meta['validFrom']);
 		$this->validTo = date_create_from_format('ymdHise', $meta['validTo']);
 
 		$this->privateKey = $certs['pkey'];
