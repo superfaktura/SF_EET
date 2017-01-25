@@ -3,6 +3,7 @@
 namespace Po1nt\EET;
 
 use Po1nt\EET\Exceptions\ClientException;
+use DateTime;
 
 /**
  * Rozdelenie PKCS#12 na klúč a certifikát
@@ -13,6 +14,13 @@ class Certificate {
 	protected $privateKey;
 	/** @var string */
 	protected $certificate;
+
+	/** @var string */
+	protected $hash;
+	/** @var DateTime */
+	protected $validFrom;
+	/** @var DateTime */
+	protected $validTo;
 	
 	/**
 	 * @return string
@@ -48,7 +56,13 @@ class Certificate {
 		}
 		
 		$certs = $this->splitPkcs12($pkcs12, $password);
-		
+
+		$meta = openssl_x509_parse($certs['cert']);
+
+		$this->hash = $meta['hash'];
+		$this->validFrom = date_create_from_format('ymdHise', $meta['validTo']);
+		$this->validTo = date_create_from_format('ymdHise', $meta['validTo']);
+
 		$this->privateKey = $certs['pkey'];
 		$this->certificate = $certs['cert'];
 	}
