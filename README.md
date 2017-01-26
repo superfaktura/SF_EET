@@ -4,7 +4,7 @@
 Install po1nt/eet using  [Composer](http://getcomposer.org/):
 
 ```sh
-$ composer require po1nt/eet
+$ composer require citronpo1nt/eet
 ```
 
 ### Dependencies
