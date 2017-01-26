@@ -3,6 +3,7 @@
 namespace Po1nt\EET;
 
 use Po1nt\EET\Exceptions\ClientException;
+use DateTime;
 
 /**
  * Rozdelenie PKCS#12 na klúč a certifikát
@@ -13,6 +14,13 @@ class Certificate {
 	protected $privateKey;
 	/** @var string */
 	protected $certificate;
+
+	/** @var string */
+	protected $hash;
+	/** @var DateTime */
+	protected $validFrom;
+	/** @var DateTime */
+	protected $validTo;
 	
 	/**
 	 * @return string
@@ -26,6 +34,27 @@ class Certificate {
 	 */
 	public function getCert() {
 		return $this->certificate;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getHash() {
+		return $this->hash;
+	}
+
+	/**
+	 * @return DateTime
+	 */
+	public function getValidFrom() {
+		return $this->validFrom;
+	}
+
+	/**
+	 * @return DateTime
+	 */
+	public function getValidTo() {
+		return $this->validTo;
 	}
 
 	/**
@@ -48,7 +77,13 @@ class Certificate {
 		}
 		
 		$certs = $this->splitPkcs12($pkcs12, $password);
-		
+
+		$meta = openssl_x509_parse($certs['cert']);
+
+		$this->hash = $meta['hash'];
+		$this->validFrom = date_create_from_format('ymdHise', $meta['validFrom']);
+		$this->validTo = date_create_from_format('ymdHise', $meta['validTo']);
+
 		$this->privateKey = $certs['pkey'];
 		$this->certificate = $certs['cert'];
 	}
@@ -65,7 +100,7 @@ class Certificate {
 		$success = openssl_pkcs12_read($pkcs12, $certs, $password);
 		
 		if(!$success) {
-			throw new ClientException("Certificate is not valid, and couldn't be split " . substr($pkcs12, 0, 100));
+			throw new ClientException("Certificate is not valid, and couldn't be split");
 		}
 		
 		return $certs;
