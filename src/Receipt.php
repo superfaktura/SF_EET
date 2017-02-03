@@ -8,7 +8,7 @@ use Po1nt\EET\Exceptions\ReceiptDataException;
 /**
  * Receipt for Ministry of Finance
  */
-class Receipt extends \stdClass {
+class Receipt extends \stdClass implements \ArrayAccess {
 
 	/**
 	 * @var ReceiptData[] $data
@@ -101,6 +101,34 @@ class Receipt extends \stdClass {
 	}
 
 	/**
+	 * Serializes receipt into array
+	 * @return array
+	 */
+	private function serialize() {
+		$serialize = [];
+		foreach($this->data as $data) {
+			$serialize[$data->getName()] = $data->getValue();
+		}
+		return $serialize;
+	}
+
+	/**
+	 * Serializes receipt to json string
+	 * @return string
+	 */
+	public function __toString() {
+		return json_encode($this->serialize());
+	}
+
+	/**
+	 * Converts Receipt into array format
+	 * @return mixed[]
+	 */
+	public function toArray() {
+		return $this->serialize();
+	}
+
+	/**
 	 * Receipt constructor.
 	 *
 	 * @param array $data
@@ -111,5 +139,50 @@ class Receipt extends \stdClass {
 		foreach($data as $k => $v) {
 			$this->k = $v;
 		}
+	}
+
+	/**
+	 * @param mixed $offset
+	 *
+	 * @return mixed
+	 */
+	public function offsetExists($offset) {
+		return isset($this->data[$offset]);
+	}
+
+	/**
+	 * @return string
+	 */
+	function __debugInfo() {
+		return $this->toArray();
+	}
+
+	/**
+	 * @param mixed $offset
+	 *
+	 * @return mixed
+	 */
+	public function offsetGet($offset) {
+		return $this->data[$offset]->getValue();
+	}
+
+	/**
+	 * @param mixed $offset
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	public function offsetSet($offset, $value) {
+		return $this->data[$offset]->setValue($value);
+	}
+
+	/**
+	 * @param mixed $offset
+	 *
+	 * @return mixed
+	 */
+	public function offsetUnset($offset) {
+		unset($this->data[$offset]);
+		return true;
 	}
 }

@@ -1,5 +1,5 @@
 {
-    "name": "superfaktura/eet",
+    "name": "citronpo1nt/eet",
     "description": "EET (Electronic records of sales for Czech Ministry of Finance) Client for PHP, based on ondrejnov/eet",
     "type": "library",
     "license": ["MIT", "BSD-3-Clause", "GPL-2.0", "GPL-3.0"],

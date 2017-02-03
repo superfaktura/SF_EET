@@ -1,10 +1,10 @@
 # PHP Library for Czech EET system
 
 ## Installation
-Install superfaktura/eet using  [Composer](http://getcomposer.org/):
+Install po1nt/eet using  [Composer](http://getcomposer.org/):
 
 ```sh
-$ composer require superfaktura/eet
+$ composer require citronpo1nt/eet
 ```
 
 ### Dependencies
