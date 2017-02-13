@@ -74,7 +74,7 @@ class Certificate {
 	 *
 	 * @throws ClientException
 	 */
-	public function __construct($pkcs12, $password) {
+	public function __construct($pkcs12, $password, $is_raw = false) {
 		$this->checkRequirements();
 		
 		if(empty($pkcs12)) {
@@ -85,7 +85,14 @@ class Certificate {
 			throw new ClientException("Certificate password is empty");
 		}
 		
-		$certs = $this->splitPkcs12($pkcs12, $password);
+		if(!$is_raw) {
+ -			$certs = $this->splitPkcs12($pkcs12, $password);
+ -		} else {
+ -			$certs = [
+ -				'cert' => $pkcs12,
+ -				'pkey' => $password
+ -			];
+ -		}
 
 		$meta = openssl_x509_parse($certs['cert']);
 
