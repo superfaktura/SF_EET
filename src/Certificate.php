@@ -14,6 +14,8 @@ class Certificate {
 	protected $privateKey;
 	/** @var string */
 	protected $certificate;
+	/** @var string */
+	protected $dic;
 
 	/** @var string */
 	protected $hash;
@@ -44,6 +46,13 @@ class Certificate {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getDic() {
+		return $this->dic;
+	}
+
+	/**
 	 * @return DateTime
 	 */
 	public function getValidFrom() {
@@ -62,11 +71,10 @@ class Certificate {
 	 *
 	 * @param string $pkcs12
 	 * @param string $password
-	 * @param bool $is_raw
 	 *
 	 * @throws ClientException
 	 */
-	public function __construct($pkcs12, $password, $is_raw = false) {
+	public function __construct($pkcs12, $password) {
 		$this->checkRequirements();
 		
 		if(empty($pkcs12)) {
@@ -77,14 +85,7 @@ class Certificate {
 			throw new ClientException("Certificate password is empty");
 		}
 		
-		if(!$is_raw) {
-			$certs = $this->splitPkcs12($pkcs12, $password);
-		} else {
-			$certs = [
-				'cert' => $pkcs12,
-				'pkey' => $password
-			];
-		}
+		$certs = $this->splitPkcs12($pkcs12, $password);
 
 		$meta = openssl_x509_parse($certs['cert']);
 
@@ -94,6 +95,7 @@ class Certificate {
 
 		$this->privateKey = $certs['pkey'];
 		$this->certificate = $certs['cert'];
+		$this->dic = $meta['subject']['CN'];
 	}
 	
 	/**
@@ -106,7 +108,7 @@ class Certificate {
 	protected function splitPkcs12($pkcs12, $password) {
 		$certs = [];
 		$success = openssl_pkcs12_read($pkcs12, $certs, $password);
-		
+
 		if(!$success) {
 			throw new ClientException("Certificate is not valid, and couldn't be split");
 		}
