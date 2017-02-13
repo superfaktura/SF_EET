@@ -86,13 +86,13 @@ class Certificate {
 		}
 		
 		if(!$is_raw) {
- -			$certs = $this->splitPkcs12($pkcs12, $password);
- -		} else {
- -			$certs = [
- -				'cert' => $pkcs12,
- -				'pkey' => $password
- -			];
- -		}
+ 			$certs = $this->splitPkcs12($pkcs12, $password);
+ 		} else {
+ 			$certs = [
+ 				'cert' => $pkcs12,
+ 				'pkey' => $password
+ 			];
+ 		}
 
 		$meta = openssl_x509_parse($certs['cert']);
 
